@@ -5,8 +5,15 @@ Recognition of complex human activities from continuous videos, taken in realist
 
 
 ### Usage
-dataset_maker.ipynb contains code to convert video files into file name annotated
-image (.png) files, using ffmpeg.
+`video_to_img.ipynb` contains code to convert video files into file name annotated
+image (.png) files, using ffmpeg. The video data can be downloaded from the following section.    
+
+`python inference_from_raw.py ./data/4_3_23.png` will run inference on a LeNet like model.   
+The saved model is in `./model` directory.   
+
+`lenet_implemented.ipynb` can be used to train the model.
+
+`get_data.py` is a script to load data and label.    
 
 
 ### Download video data
