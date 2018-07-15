@@ -92,7 +92,10 @@ dir_ext = './data/5_9_48.png'
 if len(sys.argv)>1:
     dir_ext = sys.argv[1]
 
-class_name = class_bins[int(dir_ext.split('/')[2].split('_')[0])]
+try:
+    class_name = class_bins[int(dir_ext.split('/')[2].split('_')[0])]
+except:
+    class_name = 3  # incase filename is bad!
 
 def main():
     x = tf.placeholder(tf.float32, (None, 32, 32, 1))
