@@ -9,6 +9,7 @@ Recognition of complex human activities from continuous videos, taken in realist
 image (.png) files, using ffmpeg. The video data can be downloaded from the following section.    
 
 `python inference_from_raw.py ./data/4_3_23.png` will run inference on a LeNet like model.   
+`./data/` directory contains some sample data for classification.
 The saved model is in `./model` directory.   
 
 `lenet_implemented.ipynb` can be used to train the model.
