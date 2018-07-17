@@ -10,7 +10,9 @@ import os
 
 loc_src_1 = "./data/img_preprocessed_set_1/"
 loc_src_2 = "./data/img_preprocessed_set_2/"
+dir_to_save = './data/sequence_gen/rnn_sequence_1.npy'
 
+dict_seq = {}
 class_nums = 6
 class_bins = {0: 'shake_hands',
              1: 'hug',
@@ -18,10 +20,6 @@ class_bins = {0: 'shake_hands',
              3: 'point',
              4: 'punch',
              5: 'push'}
-
-# classNum = lambda file_name : fileName.split('_')[0]
-
-
 
 def readImg(file_name):
     img = cv2.imread(file_name)
@@ -87,21 +85,10 @@ def LeNetSequenceGen(x):
 
     return logits, seq_fc1
 
-def closureClassName(num):
-    # filter_class = closureClassName(0)
-    # file_names = os.listdir(loc_src_1)
-    # file_names_0 = filter(filter_class, file_names)
-    def filterByClass(file):
-        if class_num(file)==num:
-            return True
-        else:
-            return False
-            return filterByClass
-
 def get_x():
     c_n , s_n , f_n = 6, 10, 1000
     for class_num in range(0, c_n):
-        for seq_num in range(1, s_n):
+        for seq_num in range(0, s_n):
             for frame_num in range(0, f_n):
                 file_name = loc_src_1 + f"{class_num}_{seq_num}_{frame_num}.png"
                 if os.path.isfile(file_name):
@@ -112,23 +99,39 @@ def get_x():
                     test_img = test_img.reshape(1, 32, 32, 1)
                     yield test_img, [class_num, seq_num, frame_num]
 
+
+def writeSequence(temp_seq, temp_seq_meta):
+    dict_name = f"class_{temp_seq_meta[0]}"
+    nested_dict_name = f"seq_{temp_seq_meta[1]}"
+    if dict_name not in dict_seq:
+        dict_seq[dict_name] = {}
+    temp_seq = np.array(temp_seq)
+    dict_seq[dict_name][nested_dict_name] = temp_seq
+    print(f"sequence of shape {temp_seq.shape} saved to dict_seq[{dict_name}][{nested_dict_name}]")
+
 def main():
+    temp_seq = []
     x = tf.placeholder(tf.float32, (None, 32, 32, 1))
     logits = LeNetSequenceGen(x)
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
+        old_seq = 0
+        temp_seq_meta = None
         for item in get_x():
             saver.restore(sess, tf.train.latest_checkpoint('./model/'))
             output, seq = sess.run(logits, feed_dict={x: item[0]})
-            print(seq[0])
-            print()
-            print()
-            # print(output)
-            # print()
-            # print(f'Model prediction -> {class_bins[np.argmax(output)]}, ({np.argmax(output)})')
-            # print(type(seq[0]))
-            # print(seq[0].shape)
+            if not item[1][1]==old_seq:
+                old_seq = item[1][1]
+                writeSequence(temp_seq, temp_seq_meta)
+                temp_seq = []
+                temp_seq_meta = None
+            temp_seq.append(seq[0])
+            temp_seq_meta = item[1]
+
+    writeSequence(temp_seq, temp_seq_meta)
+    np.save(dir_to_save, dict_seq)
+    print(f"Generated sequence saved at {dir_to_save}")
 
 if __name__ == '__main__':
     main()
